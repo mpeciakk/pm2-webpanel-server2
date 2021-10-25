@@ -37,7 +37,7 @@ export class AppService {
         return processes
     }
 
-    async getProcesses(name: string): Promise<Process[]> {
+    async getProcess(name: string): Promise<Process[]> {
         const processes = []
 
         const host = this.hosts.find((host) => host.name === name)
