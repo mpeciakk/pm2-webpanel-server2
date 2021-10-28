@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { Process } from './interfaces/process.interface'
 import axios from 'axios'
-import { Host } from './interfaces/host.interface'
-import { HostStatistics } from './interfaces/host-statistics.interface'
+import { HostStatistics } from 'src/interfaces/host-statistics.interface'
+import { Host } from 'src/interfaces/host.interface'
+import { Process } from 'src/interfaces/process.interface'
 
 @Injectable()
-export class AppService {
+export class HostsService {
     private hosts: Host[] = [
         {
             name: 'Server1',
