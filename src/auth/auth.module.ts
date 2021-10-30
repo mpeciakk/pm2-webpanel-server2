@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport'
 import { JwtModule } from '@nestjs/jwt'
 import { JwtStrategy } from './jwt.strategy'
 import { AuthController } from './auth.controller'
-import { UsersModule } from 'src/users/users.module'
+import { UsersModule } from '../users/users.module'
 import * as dotenv from 'dotenv'
 
 // it's required, otherwise process.env.JWT_SECRET wouldn't be accessible in @Module decorator

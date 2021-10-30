@@ -1,19 +1,17 @@
 import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
 import axios from 'axios'
-import { HostStatistics } from 'src/interfaces/host-statistics.interface'
-import { Host } from 'src/interfaces/host.interface'
-import { Process } from 'src/interfaces/process.interface'
+import { Model } from 'mongoose'
+import { HostStatistics } from './interfaces/host-statistics.interface'
+import { Process } from './interfaces/process.interface'
+import { Host } from './host.schema'
+import { RawProcess } from './interfaces/raw-process.interface'
 
 @Injectable()
 export class HostsService {
-    private hosts: Host[] = [
-        {
-            name: 'Server1',
-            url: 'http://localhost:3030',
-        },
-    ]
+    constructor(@InjectModel(Host.name) private hostModel: Model<Host>) {}
 
-    private parseProcess(data): Process {
+    private parseProcess(data: RawProcess) {
         return {
             name: data.name,
             id: data.pm2_env.pm_id,
@@ -21,13 +19,14 @@ export class HostsService {
         }
     }
 
-    async getAllProcesses(): Promise<Process[]> {
-        const processes = []
+    async getAllProcesses() {
+        const processes = [] as Process[]
+        const hosts = await this.getHosts()
 
-        for (const host of this.hosts) {
+        for (const host of hosts) {
             const response = await axios.get(host.url)
 
-            const data = response.data as Process[]
+            const data = response.data as RawProcess[]
 
             for (const process of data) {
                 processes.push(this.parseProcess(process))
@@ -37,15 +36,15 @@ export class HostsService {
         return processes
     }
 
-    async getProcess(name: string): Promise<Process[]> {
-        const processes = []
+    async getProcesses(name: string) {
+        const processes = [] as Process[]
 
-        const host = this.hosts.find((host) => host.name === name)
+        const host = await this.getHost(name)
 
         if (host) {
             const response = await axios.get(host.url)
 
-            const data = response.data as Process[]
+            const data = response.data as RawProcess[]
 
             for (const process of data) {
                 processes.push(this.parseProcess(process))
@@ -55,14 +54,18 @@ export class HostsService {
         return processes
     }
 
-    getHosts(): Host[] {
-        return this.hosts
-    }
-
-    async getStats(name: string): Promise<HostStatistics> {
-        const host = this.hosts.find((host) => host.name === name)
+    async getStats(name: string) {
+        const host = await this.getHost(name)
 
         const response = await axios.get(`${host.url}/stats`)
         return response.data as HostStatistics
+    }
+
+    async getHosts() {
+        return await this.hostModel.find().exec()
+    }
+
+    async getHost(name: string) {
+        return await this.hostModel.findOne({ name }).exec()
     }
 }
